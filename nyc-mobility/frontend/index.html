@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYC Taxi Mobility Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;800&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<aside class="filters" aria-label="Filters">
+  <h1>Taxi trips,<br>zone by zone</h1>
+  <p class="sub">Yellow cab pickups across New York City. Every chart and table responds to these filters.</p>
+  <form id="filterForm" autocomplete="off">
+    <fieldset><legend>When</legend>
+      <label>From <input type="date" id="date_from"></label>
+      <label>To <input type="date" id="date_to"></label>
+      <div class="pair">
+        <label>Hour from <input type="number" id="hour_from" min="0" max="23" placeholder="0"></label>
+        <label>Hour to <input type="number" id="hour_to" min="0" max="23" placeholder="23"></label>
+      </div>
+      <label>Days <select id="day_type"><option value="">All days</option><option value="weekday">Weekdays</option><option value="weekend">Weekends</option></select></label>
+    </fieldset>
+    <fieldset><legend>Where</legend>
+      <label>Pickup borough <select id="borough"><option value="">All boroughs</option></select></label>
+      <div id="zoneChip" class="chip" hidden><span id="zoneChipText"></span><button type="button" id="zoneClear" aria-label="Clear zone filter">Clear</button></div>
+    </fieldset>
+    <fieldset><legend>Trip size</legend>
+      <div class="pair">
+        <label>Min miles <input type="number" id="min_distance" min="0" step="0.5"></label>
+        <label>Max miles <input type="number" id="max_distance" min="0" step="0.5"></label>
+      </div>
+      <div class="pair">
+        <label>Min fare $ <input type="number" id="min_fare" min="0" step="1"></label>
+        <label>Max fare $ <input type="number" id="max_fare" min="0" step="1"></label>
+      </div>
+    </fieldset>
+    <div class="actions"><button type="submit" class="primary">Apply filters</button><button type="button" id="reset">Reset</button></div>
+  </form>
+  <details class="clean"><summary>How the data was cleaned</summary><ul id="cleanList"></ul></details>
+</aside>
+
+<main>
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <section class="panel map-panel">
+    <div class="panel-head">
+      <h2>Where the city moves</h2>
+      <div class="seg" id="metricTabs" role="tablist">
+        <button data-m="pickups" class="on">Pickups</button><button data-m="dropoffs">Dropoffs</button>
+        <button data-m="avg_fare">Avg fare</button><button data-m="avg_speed">Avg speed</button>
+      </div>
+    </div>
+    <div id="map"></div>
+    <div class="legend"><span id="legMin"></span><i></i><span id="legMax"></span><em>Click a zone to filter everything to its pickups.</em></div>
+  </section>
+
+  <div class="grid2">
+    <section class="panel"><h2>Demand and speed through the day</h2><p class="note">Bars are trips; the line is average mph. Speed dips where demand peaks.</p><div class="chart"><canvas id="hourChart"></canvas></div></section>
+    <section class="panel"><h2>Tipping by time of day</h2><p class="note">Average tip % on card-paid trips (cash tips aren't recorded).</p><div class="chart"><canvas id="tipChart"></canvas></div></section>
+  </div>
+
+  <section class="panel"><h2>Weekly rhythm</h2><p class="note">Trips by day of week and hour. Darker means busier.</p><div id="heat"></div></section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Busiest zones and routes</h2>
+      <div class="inline">
+        <select id="topKind"><option value="zone">Pickup zones</option><option value="route">Routes</option></select>
+        <label>Top <input type="number" id="topK" value="10" min="1" max="100"></label>
+      </div>
+    </div>
+    <p class="note" id="topMeta"></p>
+    <table id="topTable"><thead><tr><th>#</th><th>Name</th><th class="r">Trips</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section class="panel">
+    <h2>Trip explorer</h2>
+    <div class="tablewrap"><table id="tripTable"><thead><tr>
+      <th data-s="pickup_ts">Pickup time</th><th>From</th><th>To</th>
+      <th data-s="trip_distance" class="r">Miles</th><th data-s="duration_min" class="r">Min</th><th data-s="speed_mph" class="r">mph</th>
+      <th data-s="fare_amount" class="r">Fare</th><th data-s="tip_pct" class="r">Tip %</th><th data-s="total_amount" class="r">Total</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div class="pager"><button id="prev">Previous</button><span id="pageInfo"></span><button id="next">Next</button></div>
+  </section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
